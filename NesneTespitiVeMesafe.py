@@ -6,8 +6,17 @@ import json
 def average(values):
     return sum(values) / len(values)
 
+def actual_width(target_class):
+    width = next((item['actual_width'] for item in data if item['class'] == target_class), None)
+    return width
+
+def compute_distance(width_pixels, focal_length, object_real_width_cm):
+    """Kameradan uzaklığı hesaplar"""
+    if width_pixels > 0:
+        return (object_real_width_cm * focal_length) / width_pixels
+    return 0
+
 # Sabit nesne boyutları ve odak uzunluğu (örnek olarak)
-reference_width_cm = 8.3  # Sabit nesnenin gerçek genişliği (cm cinsinden)
 focal_length = 800  # Örnek odak uzunluğu (piksel cinsinden)
 
 # YOLO modelini yükle
@@ -17,15 +26,12 @@ model = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
 classes = []
 with open("coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
+    
+with open("configuration.json", "r") as file:
+    data = json.load(file)
 
 # Kamerayı başlat
 cap = cv2.VideoCapture(0)
-
-def compute_distance(width_pixels, focal_length, object_real_width_cm):
-    """Kameradan uzaklığı hesaplar"""
-    if width_pixels > 0:
-        return (object_real_width_cm * focal_length) / width_pixels
-    return 0
 
 # Ortalamayı hesaplamak için değişkenler
 distance_values = {}
@@ -90,7 +96,7 @@ while True:
             color = (0, 255, 0) # yeşil - sınırlayıcı kutu rengi
 
             # Nesnenin uzaklığını hesapla
-            distance_cm = compute_distance(w, focal_length, reference_width_cm)
+            distance_cm = compute_distance(w, focal_length, actual_width(label))
 
             # Sonuçları görüntüle
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)  # kutu çizimi
