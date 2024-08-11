@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import json
 
-## Fotoğraf versiyon
+## Fotoğraf versiyonu
 
 def average(values):
     return sum(values) / len(values)
